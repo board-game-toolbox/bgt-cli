@@ -2,6 +2,7 @@ import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as cheerio from 'cheerio'
 import AdmZip from 'adm-zip'
+import { readPluginManifest } from './utils'
 
 export function pack(dist: string) {
   console.log('===== pack start =====')
@@ -10,8 +11,10 @@ export function pack(dist: string) {
   // 1. copy manifest.json
   const manifestPath = resolve(cwd, 'manifest.json')
   copyFileSync(manifestPath, resolve(dist, 'manifest.json'))
-  const pluginId = JSON.parse(readFileSync(manifestPath, 'utf-8')).id
-  if (!pluginId) throw new Error('no "id" in manifest.json')
+  const manifest = readPluginManifest()
+  if (!manifest) throw new Error('missing or invalid manifest.json')
+  const pluginId = manifest.id
+  if (!pluginId) throw new Error('no <id> in manifest.json')
   // 2. copy icon.png
   const iconPath = resolve(cwd, 'icon.png')
   copyFileSync(iconPath, resolve(dist, 'icon.png'))
